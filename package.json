@@ -1,5 +1,5 @@
 {
-  "name": "cvm",
+  "name": "@cloudesk/cvm",
   "version": "1.0.0",
   "description": "Claude Code settings profile manager",
   "bin": {
@@ -8,6 +8,10 @@
   "scripts": {
     "build": "tsup src/index.ts --format cjs --dts",
     "dev": "tsx src/index.ts"
+  },
+  "homepage": "https://github.com/enix223/cvm",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
     "commander": "^12.1.0",

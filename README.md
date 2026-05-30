@@ -5,7 +5,7 @@ Claude Code settings profile manager — quickly switch between Claude Code conf
 ## Installation
 
 ```bash
-npm install -g .
+npm install -g @cloudesk/cvm
 ```
 
 ## Usage
