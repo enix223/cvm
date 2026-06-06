@@ -101,8 +101,23 @@ export class ProfileManager {
     this.ensureDir();
     const profilePath = this.getProfilePath(name);
     if (!fs.existsSync(profilePath)) return false;
-    const content = fs.readFileSync(profilePath, "utf-8");
-    fs.writeFileSync(this.settingsFile, content);
+
+    const profileData = JSON.parse(fs.readFileSync(profilePath, "utf-8"));
+    const profileEnv = (profileData.env as Record<string, string>) ?? {};
+
+    let existingData: Record<string, unknown> = {};
+    if (fs.existsSync(this.settingsFile)) {
+      try {
+        existingData = JSON.parse(fs.readFileSync(this.settingsFile, "utf-8"));
+      } catch {
+        // corrupt file — start fresh
+      }
+    }
+
+    const existingEnv = (existingData.env as Record<string, string>) ?? {};
+    const mergedEnv = { ...existingEnv, ...profileEnv };
+    const merged = { ...existingData, env: mergedEnv };
+    fs.writeFileSync(this.settingsFile, JSON.stringify(merged, null, 2) + "\n");
     this.writeActiveProfile(name);
     return true;
   }

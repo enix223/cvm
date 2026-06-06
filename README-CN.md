@@ -23,7 +23,7 @@ cvm use <name>               将配置合并到 .claude/settings.local.json（�
 
 ## 配置文件
 
-配置存储为 `~/.claude/settings-<name>.json`。激活配置时会将其复制到 `~/.claude/settings.json`，Claude Code 启动时会读取该文件。
+配置存储为 `~/.claude/settings-<name>.json`。激活配置时会将其合并到 `~/.claude/settings.json`，Claude Code 启动时会读取该文件。
 
 每个配置包含以下环境变量：
 
@@ -40,7 +40,7 @@ cvm use <name>               将配置合并到 .claude/settings.local.json（�
 
 ### 全局 vs 本地
 
-- **`cvm profile activate <name>`** — 将配置复制到 `~/.claude/settings.json`（全局，适用于所有项目）。
+- **`cvm profile activate <name>`** — 将配置合并到 `~/.claude/settings.json`（全局，适用于所有项目）。如果文件已存在，配置值会覆盖匹配的键，同时保留其他已有键。
 - **`cvm use <name>`** — 将配置合并到当前目录的 `.claude/settings.local.json`（本地，仅限当前项目）。如果文件已存在，配置值会覆盖匹配的键，同时保留其他已有键。
 
 ## 项目结构
@@ -66,3 +66,19 @@ npm test            # 运行测试
 npm run lint        # 使用 eslint 检查
 npm run format      # 使用 prettier 格式化
 ```
+
+## 更新日志
+
+### v1.1.1
+
+- `cvm profile activate` 现在合并到 `settings.json` 而非替换 — 已有的键（如 `permissions`）和非配置的环境变量会被保留。
+
+### v1.1.0
+
+- 新增 `cvm use <name>` 命令，将配置合并到 `.claude/settings.local.json`（项目级覆盖）。
+- 添加 MIT 许可证。
+- 添加中文 README。
+
+### v1.0.0
+
+- 初始版本：`cvm profile` 子命令（add、update、list、delete、activate、show、current）。

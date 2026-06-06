@@ -141,6 +141,26 @@ describe("ProfileManager", () => {
       expect(pm.readActiveProfile()).toBe("b");
     });
 
+    it("preserves existing non-env keys in settings.json", () => {
+      pm.writeProfile("p1", { TOKEN: "abc" });
+      // Pre-populate settings.json with permissions and an unrelated env key
+      fs.writeFileSync(
+        pm.settingsFile,
+        JSON.stringify(
+          { permissions: { allow: ["Bash(git:*)"], }, env: { MODEL: "opus" } },
+          null,
+          2,
+        ) + "\n",
+      );
+
+      pm.activateProfile("p1");
+
+      const result = JSON.parse(fs.readFileSync(pm.settingsFile, "utf-8"));
+      expect(result.permissions).toEqual({ allow: ["Bash(git:*)"], });
+      // profile env wins over existing env key
+      expect(result.env).toEqual({ MODEL: "opus", TOKEN: "abc" });
+    });
+
     it("falls back to content comparison when .cvm-active is missing", () => {
       pm.writeProfile("legacy", { KEY: "val" });
       // Manually write settings.json using same format as writeProfile

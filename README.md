@@ -23,7 +23,7 @@ cvm use <name>               Merge a profile into .claude/settings.local.json (l
 
 ## Profiles
 
-Profiles are stored as `~/.claude/settings-<name>.json`. Activating a profile copies it to `~/.claude/settings.json`, which Claude Code reads at startup.
+Profiles are stored as `~/.claude/settings-<name>.json`. Activating a profile merges it into `~/.claude/settings.json`, which Claude Code reads at startup.
 
 Each profile captures these environment variables:
 
@@ -40,7 +40,7 @@ Typical use case: switching between different API endpoints (custom proxy, diffe
 
 ### Global vs Local
 
-- **`cvm profile activate <name>`** — Copies the profile to `~/.claude/settings.json` (global, applies to all projects).
+- **`cvm profile activate <name>`** — Merges the profile into `~/.claude/settings.json` (global, applies to all projects). If the file already exists, profile values overwrite matching keys while preserving other existing keys.
 - **`cvm use <name>`** — Merges the profile into `.claude/settings.local.json` in the current directory (local, project-specific). If the file already exists, profile values overwrite matching keys while preserving other existing keys.
 
 ## Project Structure
@@ -66,3 +66,19 @@ npm test            # Run tests
 npm run lint        # Lint with eslint
 npm run format      # Format with prettier
 ```
+
+## Changelog
+
+### v1.1.1
+
+- `cvm profile activate` now merges into `settings.json` instead of replacing it — existing keys (e.g. `permissions`) and non-profile env vars are preserved.
+
+### v1.1.0
+
+- Added `cvm use <name>` command to merge a profile into `.claude/settings.local.json` (project-local override).
+- Added MIT license.
+- Added Chinese README.
+
+### v1.0.0
+
+- Initial release: `cvm profile` subcommands (add, update, list, delete, activate, show, current).
