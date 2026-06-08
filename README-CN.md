@@ -69,6 +69,10 @@ npm run format      # 使用 prettier 格式化
 
 ## 更新日志
 
+### v1.1.2
+
+- `cvm profile activate` 和 `cvm use` 现在会合并配置文件中的**所有**顶层键（如 `mcpServers`、`permissions`），而不仅仅是 `env`。嵌套对象会深度合并；数组会拼接。
+
 ### v1.1.1
 
 - `cvm profile activate` 现在合并到 `settings.json` 而非替换 — 已有的键（如 `permissions`）和非配置的环境变量会被保留。

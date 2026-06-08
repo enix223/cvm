@@ -161,6 +161,110 @@ describe("ProfileManager", () => {
       expect(result.env).toEqual({ MODEL: "opus", TOKEN: "abc" });
     });
 
+    it("merges mcpServers from profile with existing mcpServers", () => {
+      // Profile with mcpServers manually added
+      const profilePath = pm.getProfilePath("work");
+      fs.writeFileSync(
+        profilePath,
+        JSON.stringify(
+          {
+            env: { ANTHROPIC_AUTH_TOKEN: "sk-new" },
+            mcpServers: { serverA: { command: "node", args: ["a.js"] } },
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+
+      // Existing settings with different mcpServers
+      fs.writeFileSync(
+        pm.settingsFile,
+        JSON.stringify(
+          {
+            env: { EXISTING: "val" },
+            mcpServers: { serverB: { command: "python", args: ["b.py"] } },
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+
+      pm.activateProfile("work");
+
+      const result = JSON.parse(fs.readFileSync(pm.settingsFile, "utf-8"));
+      // Both servers should be present
+      expect(result.mcpServers.serverA).toEqual({ command: "node", args: ["a.js"] });
+      expect(result.mcpServers.serverB).toEqual({ command: "python", args: ["b.py"] });
+      // Env merged too
+      expect(result.env).toEqual({ EXISTING: "val", ANTHROPIC_AUTH_TOKEN: "sk-new" });
+    });
+
+    it("profile mcpServers keys override existing mcpServers keys", () => {
+      const profilePath = pm.getProfilePath("work");
+      fs.writeFileSync(
+        profilePath,
+        JSON.stringify(
+          {
+            env: {},
+            mcpServers: { shared: { command: "new-cmd", args: [] } },
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+
+      fs.writeFileSync(
+        pm.settingsFile,
+        JSON.stringify(
+          {
+            env: {},
+            mcpServers: { shared: { command: "old-cmd", args: ["old"] } },
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+
+      pm.activateProfile("work");
+
+      const result = JSON.parse(fs.readFileSync(pm.settingsFile, "utf-8"));
+      // Profile wins on scalar conflict; arrays concatenate
+      expect(result.mcpServers.shared).toEqual({ command: "new-cmd", args: ["old"] });
+    });
+
+    it("concatenates arrays from profile and existing settings", () => {
+      const profilePath = pm.getProfilePath("p1");
+      fs.writeFileSync(
+        profilePath,
+        JSON.stringify(
+          {
+            env: {},
+            permissions: { allow: ["Bash(npm test *)"] },
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+
+      fs.writeFileSync(
+        pm.settingsFile,
+        JSON.stringify(
+          {
+            env: {},
+            permissions: { allow: ["Bash(git:*)"] },
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+
+      pm.activateProfile("p1");
+
+      const result = JSON.parse(fs.readFileSync(pm.settingsFile, "utf-8"));
+      // Arrays are concatenated
+      expect(result.permissions.allow).toEqual(["Bash(git:*)", "Bash(npm test *)"]);
+    });
+
     it("falls back to content comparison when .cvm-active is missing", () => {
       pm.writeProfile("legacy", { KEY: "val" });
       // Manually write settings.json using same format as writeProfile
@@ -258,6 +362,46 @@ describe("ProfileManager", () => {
       pm.writeProfile("test", { KEY: "val" });
       pm.mergeIntoLocal("test", localDir);
       expect(fs.existsSync(path.join(localDir, ".claude"))).toBe(true);
+    });
+
+    it("merges non-env keys (e.g. mcpServers) into local settings", () => {
+      // Profile with mcpServers manually added
+      const profilePath = pm.getProfilePath("work");
+      fs.writeFileSync(
+        profilePath,
+        JSON.stringify(
+          {
+            env: { ANTHROPIC_AUTH_TOKEN: "sk-123" },
+            mcpServers: { myServer: { command: "node", args: ["server.js"] } },
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+
+      const localClaude = path.join(localDir, ".claude");
+      fs.mkdirSync(localClaude, { recursive: true });
+      fs.writeFileSync(
+        path.join(localClaude, "settings.local.json"),
+        JSON.stringify(
+          {
+            env: { EXISTING: "val" },
+            mcpServers: { otherServer: { command: "python", args: ["run.py"] } },
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+
+      pm.mergeIntoLocal("work", localDir);
+
+      const localPath = path.join(localDir, ".claude", "settings.local.json");
+      const content = JSON.parse(fs.readFileSync(localPath, "utf-8"));
+      // Both servers present
+      expect(content.mcpServers.myServer).toEqual({ command: "node", args: ["server.js"] });
+      expect(content.mcpServers.otherServer).toEqual({ command: "python", args: ["run.py"] });
+      // Env merged
+      expect(content.env).toEqual({ EXISTING: "val", ANTHROPIC_AUTH_TOKEN: "sk-123" });
     });
   });
 });

@@ -2,6 +2,29 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 
+function isPlainObject(val: unknown): val is Record<string, unknown> {
+  return val !== null && typeof val === "object" && !Array.isArray(val);
+}
+
+function deepMerge(
+  base: Record<string, unknown>,
+  override: Record<string, unknown>,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = { ...base };
+  for (const key of Object.keys(override)) {
+    const baseVal = result[key];
+    const overrideVal = override[key];
+    if (isPlainObject(baseVal) && isPlainObject(overrideVal)) {
+      result[key] = deepMerge(baseVal, overrideVal);
+    } else if (Array.isArray(baseVal) && Array.isArray(overrideVal)) {
+      result[key] = [...baseVal, ...overrideVal];
+    } else {
+      result[key] = overrideVal;
+    }
+  }
+  return result;
+}
+
 export class ProfileManager {
   readonly dir: string;
   readonly settingsFile: string;
@@ -75,6 +98,12 @@ export class ProfileManager {
     return data.env ?? {};
   }
 
+  readProfileRaw(name: string): Record<string, unknown> | null {
+    const profilePath = this.getProfilePath(name);
+    if (!fs.existsSync(profilePath)) return null;
+    return JSON.parse(fs.readFileSync(profilePath, "utf-8"));
+  }
+
   writeProfile(name: string, env: Record<string, string>): void {
     this.ensureDir();
     const profilePath = this.getProfilePath(name);
@@ -102,8 +131,7 @@ export class ProfileManager {
     const profilePath = this.getProfilePath(name);
     if (!fs.existsSync(profilePath)) return false;
 
-    const profileData = JSON.parse(fs.readFileSync(profilePath, "utf-8"));
-    const profileEnv = (profileData.env as Record<string, string>) ?? {};
+    const profileData = this.readProfileRaw(name)!;
 
     let existingData: Record<string, unknown> = {};
     if (fs.existsSync(this.settingsFile)) {
@@ -114,17 +142,15 @@ export class ProfileManager {
       }
     }
 
-    const existingEnv = (existingData.env as Record<string, string>) ?? {};
-    const mergedEnv = { ...existingEnv, ...profileEnv };
-    const merged = { ...existingData, env: mergedEnv };
+    const merged = deepMerge(existingData, profileData);
     fs.writeFileSync(this.settingsFile, JSON.stringify(merged, null, 2) + "\n");
     this.writeActiveProfile(name);
     return true;
   }
 
   mergeIntoLocal(name: string, localDir: string): Record<string, string> | null {
-    const profileEnv = this.readProfile(name);
-    if (profileEnv === null) return null;
+    const profileData = this.readProfileRaw(name);
+    if (profileData === null) return null;
 
     const localSettingsPath = path.join(localDir, ".claude", "settings.local.json");
     let existingData: Record<string, unknown> = {};
@@ -142,10 +168,8 @@ export class ProfileManager {
       }
     }
 
-    const existingEnv = (existingData.env as Record<string, string>) ?? {};
-    const mergedEnv = { ...existingEnv, ...profileEnv };
-    const merged = { ...existingData, env: mergedEnv };
+    const merged = deepMerge(existingData, profileData);
     fs.writeFileSync(localSettingsPath, JSON.stringify(merged, null, 2) + "\n");
-    return mergedEnv;
+    return (merged.env as Record<string, string>) ?? {};
   }
 }

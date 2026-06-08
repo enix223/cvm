@@ -69,6 +69,10 @@ npm run format      # Format with prettier
 
 ## Changelog
 
+### v1.1.2
+
+- `cvm profile activate` and `cvm use` now merge **all** top-level keys from the profile (e.g. `mcpServers`, `permissions`), not just `env`. Nested objects are deep-merged; arrays are concatenated.
+
 ### v1.1.1
 
 - `cvm profile activate` now merges into `settings.json` instead of replacing it — existing keys (e.g. `permissions`) and non-profile env vars are preserved.
