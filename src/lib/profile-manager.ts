@@ -110,6 +110,13 @@ export class ProfileManager {
     fs.writeFileSync(profilePath, JSON.stringify({ env }, null, 2) + "\n");
   }
 
+  duplicateProfile(source: string, dest: string): boolean {
+    const env = this.readProfile(source);
+    if (env === null) return false;
+    this.writeProfile(dest, env);
+    return true;
+  }
+
   deleteProfileFile(name: string): boolean {
     const profilePath = this.getProfilePath(name);
     if (!fs.existsSync(profilePath)) return false;

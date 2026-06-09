@@ -17,6 +17,7 @@ cvm profile list             List all profiles (* = active)
 cvm profile activate <name>  Switch to a profile (global)
 cvm profile show <name>      Show profile details
 cvm profile current          Print the active profile name
+cvm profile duplicate <src> <dst> Duplicate a profile
 cvm profile delete <name>    Delete a profile
 cvm use <name>               Merge a profile into .claude/settings.local.json (local)
 ```
@@ -53,7 +54,7 @@ src/
 │   ├── validation.ts           # Profile name validation
 │   └── profile-manager.ts      # ProfileManager class (all filesystem operations)
 └── commands/
-    ├── profile.ts              # profile subcommands (add, update, list, delete, activate, show, current)
+    ├── profile.ts              # profile subcommands (add, update, list, delete, duplicate, activate, show, current)
     └── use.ts                  # use top-level command
 ```
 
@@ -68,6 +69,10 @@ npm run format      # Format with prettier
 ```
 
 ## Changelog
+
+### v1.2.0
+
+- Added `cvm profile duplicate <source> <dest>` command to clone an existing profile.
 
 ### v1.1.2
 

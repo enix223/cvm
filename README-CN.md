@@ -17,6 +17,7 @@ cvm profile list             列出所有配置（* 表示当前激活）
 cvm profile activate <name>  切换到指定配置（全局）
 cvm profile show <name>      查看配置详情
 cvm profile current          打印当前激活的配置名称
+cvm profile duplicate <src> <dst> 复制配置
 cvm profile delete <name>    删除配置
 cvm use <name>               将配置合并到 .claude/settings.local.json（本地）
 ```
@@ -53,7 +54,7 @@ src/
 │   ├── validation.ts           # 配置名称验证
 │   └── profile-manager.ts      # ProfileManager 类（所有文件系统操作）
 └── commands/
-    ├── profile.ts              # profile 子命令（add, update, list, delete, activate, show, current）
+    ├── profile.ts              # profile 子命令（add, update, list, delete, duplicate, activate, show, current）
     └── use.ts                  # use 顶级命令
 ```
 
@@ -68,6 +69,10 @@ npm run format      # 使用 prettier 格式化
 ```
 
 ## 更新日志
+
+### v1.2.0
+
+- 新增 `cvm profile duplicate <source> <dest>` 命令，复制已有配置。
 
 ### v1.1.2
 

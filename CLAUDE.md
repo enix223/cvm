@@ -24,16 +24,16 @@ This is a small CLI (`cvm`) for managing Claude Code settings profiles.
   - `validation.ts` — `validateProfileName()` function
   - `profile-manager.ts` — `ProfileManager` class (all filesystem operations)
 - **`src/commands/`** — CLI command implementations:
-  - `profile.ts` — `profile` subcommand group (add, update, list, delete, activate, show, current)
+  - `profile.ts` — `profile` subcommand group (add, update, list, delete, duplicate, activate, show, current)
   - `use.ts` — `use` top-level command
 
 ### ProfileManager class
 
-Core logic lives in `ProfileManager` (`src/lib/profile-manager.ts`), which takes an optional directory in its constructor (defaults to `~/.claude`). This makes it testable with temp directories. The class handles: reading/writing profiles, active profile tracking, directory creation, profile deletion, and merging into local settings.
+Core logic lives in `ProfileManager` (`src/lib/profile-manager.ts`), which takes an optional directory in its constructor (defaults to `~/.claude`). This makes it testable with temp directories. The class handles: reading/writing profiles, duplicating profiles, active profile tracking, directory creation, profile deletion, and merging into local settings.
 
 ### Commands
 
-`profile add`, `profile update`, `profile list`, `profile delete`, `profile activate`, `profile show`, `profile current` — registered under the `profile` subcommand via `registerProfileCommand()`.
+`profile add`, `profile update`, `profile list`, `profile delete`, `profile duplicate`, `profile activate`, `profile show`, `profile current` — registered under the `profile` subcommand via `registerProfileCommand()`.
 
 `use <name>` — Top-level command. Merges a profile into `.claude/settings.local.json` in the current working directory (project-local override). Shallow-merges env keys: profile values overwrite, existing keys not in the profile are preserved.
 

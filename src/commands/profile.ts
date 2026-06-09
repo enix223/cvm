@@ -124,6 +124,40 @@ function deleteProfile(name: string): void {
   console.log(`Profile "${name}" deleted.`);
 }
 
+async function duplicateProfile(source: string, dest: string): Promise<void> {
+  const validation = validateProfileName(dest);
+  if (validation !== true) {
+    console.error(`Invalid profile name: ${validation}`);
+    process.exit(1);
+  }
+
+  defaultManager.ensureDir();
+
+  if (!defaultManager.readProfile(source)) {
+    console.error(`Profile "${source}" not found at ${defaultManager.getProfilePath(source)}`);
+    process.exit(1);
+  }
+
+  const destPath = defaultManager.getProfilePath(dest);
+  if (fs.existsSync(destPath)) {
+    const { overwrite } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "overwrite",
+        message: `Profile "${dest}" already exists. Overwrite?`,
+        default: false,
+      },
+    ]);
+    if (!overwrite) {
+      console.log("Cancelled.");
+      return;
+    }
+  }
+
+  defaultManager.duplicateProfile(source, dest);
+  console.log(`Profile "${source}" duplicated as "${dest}".`);
+}
+
 function listProfiles(): void {
   const profiles = defaultManager.listProfiles();
 
@@ -199,6 +233,11 @@ export function registerProfileCommand(program: Command): void {
     .command("delete <name>")
     .description("Delete a profile")
     .action((name: string) => deleteProfile(name));
+
+  profile
+    .command("duplicate <source> <dest>")
+    .description("Duplicate a profile")
+    .action((source: string, dest: string) => duplicateProfile(source, dest));
 
   profile
     .command("activate <name>")

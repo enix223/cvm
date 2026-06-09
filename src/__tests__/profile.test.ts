@@ -116,6 +116,36 @@ describe("ProfileManager", () => {
     });
   });
 
+  describe("duplicateProfile", () => {
+    it("copies profile data from source to dest", () => {
+      const env = { ANTHROPIC_AUTH_TOKEN: "sk-test", ANTHROPIC_MODEL: "opus" };
+      pm.writeProfile("source", env);
+
+      expect(pm.duplicateProfile("source", "dest")).toBe(true);
+      expect(pm.readProfile("dest")).toEqual(env);
+    });
+
+    it("returns false for non-existent source", () => {
+      expect(pm.duplicateProfile("nope", "dest")).toBe(false);
+    });
+
+    it("creates an independent copy", () => {
+      pm.writeProfile("src", { KEY: "original" });
+      pm.duplicateProfile("src", "copy");
+
+      pm.writeProfile("copy", { KEY: "modified" });
+      expect(pm.readProfile("src")).toEqual({ KEY: "original" });
+    });
+
+    it("overwrites existing destination profile", () => {
+      pm.writeProfile("src", { KEY: "new" });
+      pm.writeProfile("dst", { KEY: "old" });
+
+      pm.duplicateProfile("src", "dst");
+      expect(pm.readProfile("dst")).toEqual({ KEY: "new" });
+    });
+  });
+
   describe("activateProfile / readActiveProfile", () => {
     it("activates a profile and writes settings.json", () => {
       const env = { ANTHROPIC_AUTH_TOKEN: "sk-123" };
