@@ -70,6 +70,10 @@ npm run format      # Format with prettier
 
 ## Changelog
 
+### v1.3.0
+
+- `cvm profile update` now automatically syncs changes to `settings.json` when updating the active profile.
+
 ### v1.2.0
 
 - Added `cvm profile duplicate <source> <dest>` command to clone an existing profile.

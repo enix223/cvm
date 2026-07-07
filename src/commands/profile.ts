@@ -114,6 +114,12 @@ async function updateProfile(name: string): Promise<void> {
   if (answers === SKIP) return;
   defaultManager.writeProfile(name, answers);
   console.log(`Profile "${name}" updated at ${defaultManager.getProfilePath(name)}`);
+
+  // If this profile is active, sync changes to settings.json
+  if (defaultManager.readActiveProfile() === name) {
+    defaultManager.activateProfile(name);
+    console.log(`Active profile updated. ${defaultManager.settingsFile} synced.`);
+  }
 }
 
 function deleteProfile(name: string): void {

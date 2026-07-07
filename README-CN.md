@@ -70,6 +70,10 @@ npm run format      # 使用 prettier 格式化
 
 ## 更新日志
 
+### v1.3.0
+
+- `cvm profile update` 更新活跃配置时，会自动同步更改到 `settings.json`。
+
 ### v1.2.0
 
 - 新增 `cvm profile duplicate <source> <dest>` 命令，复制已有配置。
